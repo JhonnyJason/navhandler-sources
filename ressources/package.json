@@ -1,22 +1,33 @@
 {
-  "name": "navhandler",
-  "version": "0.0.1",
-  "description": "A convenience package to incorporate the browser history API into your PWA.",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": ["PWA", "browser", "history", "navigation", "back", "forward", "pageload", "refresh", "browser history API"],
-  "author": "Lenard Frommelt lenard@frommelt.dev",
-  "license": "Unlicense",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/JhonnyJason/navhandler.git"
-  },
-  "bugs": {
-    "url": "https://github.com/JhonnyJason/navhandler/issues"
-  },
-  "homepage": "https://github.com/JhonnyJason/thingy-crypto-node-output#readme",
-  "dependencies": {},
-  "type": "module"
+    "name": "navhandler",
+    "version": "0.0.1",
+    "description": "A convenience package to incorporate the browser history API into your PWA.",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [
+        "PWA",
+        "vanillajs",
+        "browser",
+        "history",
+        "navigation",
+        "back",
+        "forward",
+        "pageload",
+        "refresh",
+        "browser history API"
+    ],
+    "author": "Lenard Frommelt lenard@frommelt.dev",
+    "license": "Unlicense",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/JhonnyJason/navhandler.git"
+    },
+    "bugs": {
+        "url": "https://github.com/JhonnyJason/navhandler/issues"
+    },
+    "homepage": "https://github.com/JhonnyJason/thingy-crypto-node-output#readme",
+    "dependencies": {},
+    "type": "module"
 }
