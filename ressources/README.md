@@ -106,12 +106,12 @@ When navigating to `modifier` states as with `nav.toMod(modifier, ctx)` the base
 We have one reserved modifier state.
 
 ### `none`
-The `none` modifier is the default modifier when there are no modifiers active. This <s>cannot</s> shall not be used for any other purposes.
+The `none` modifier is the default modifier when there are no modifiers active. This <s>cannot</s> shallnot be used for any other purposes.
 
 
 # navState
 
-The navState is the main component and is passed to the update and onLoad Functions you provide.
+The navState is the main information structure here and is passed to your `update` and `onLoad` functions.
 
 This is an example structure:
 ```
@@ -132,12 +132,19 @@ This is an example structure:
 
 # navAction
 You could see that in the navState there is a member called `navAction`. It is imporant for recognizing how we have navigated to the current state and when we did so. It consists of an `action` and a `timestamp`.
-
-If the timestamp does not mach - we probably deal with a browser nagivation. And the new `navAction` immediatly set before passed to the `navStateUpdate`.
 ```
     "navAction": {
         "action": "nav",
         "timestamp": 1706721511593
+    }
+```
+
+
+If the timestamp does not match with our last known active navigation - then we deal with a browser nagivation. In this case the `navAction` is immediatly updated before passed to your `navStateUpdate`. (E.g. navitate to `page2` then press refresh in the browser.)
+```
+    "navAction": {
+        "action": "browserNav {refresh, back or forward}",
+        "timestamp": 1706721622505
     }
 ```
 
