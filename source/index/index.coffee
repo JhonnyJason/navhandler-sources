@@ -106,11 +106,13 @@ export appLoaded = ->
         
         history.replaceState(navState, "")
 
-    if navState.base == "INVALID"
-        try
-            navigationLocked = true
-            await navigateBack(1)
-        finally navigationLocked = false
+    # if navState.base == "VOID"
+    #     try
+    #         navigationLocked = true
+    #         await navigateBack(1)
+    #     finally navigationLocked = false
+
+    await escapeVoidState() # we might be in state "VOID" -> escape it!
 
     navState = history.state
     displayState(navState)
@@ -125,20 +127,45 @@ historyStateChanged = (evnt) ->
     #    - Browser Back 
     #    - Code Back -> only this is interesting to us
 
-    if !isValidHistoryState() then throw new Error("No Valid History State on popstateEvent!") ## What to do with this? treat it as pageLoad event?
-    
+    # Exception: changing the URL and click enter
+    if !isValidHistoryState() then return appLoaded() ## we treat it as appload for now :-)
+        # newNavStateString = JSON.stringify(history.state)
+        # oldNavStateString = JSON.stringify(navState)
+
+        # if isValidState(navState) ## treat it as refresh
+        #     navState.navAction = getBrowserNavAction()
+        #     NAV_info.lastNavAction = navState.navAction
+        #     storeNavInfo(NAV_info)
+            
+        #     history.replaceState(navState, "")
+
+        # else ## What to do with this? treat it as pageLoad event?
+        #     console.warn("No Valid History State on popstateEvent!\n New history State:#{newNavStateString}\n Last history State:#{oldNavStateString}") 
+        #     return appLoaded()
+
     navState = history.state
-    isCodeBackNav = checkCodeBackNavAction(NAV_info.lastNavAction)
+    internalBackNav = isInternalBackNavAction(NAV_info.lastNavAction)
     
-    if isCodeBackNav then navState.navAction = NAV_info.lastNavAction
+    if internalBackNav then navState.navAction = NAV_info.lastNavAction
     else navState.navAction = getBrowserNavAction()
     
     history.replaceState(navState, "")
     displayState(navState)
     
-    if isCodeBackNav then resolveCodeBackNav()
-    else if navState.base != "INVALID" then updateAppWithNavState(navState)
+    if internalBackNav then resolveInternalBackNav()
+    else if navState.base != "VOID" then updateAppWithNavState(navState)
     return
+
+
+############################################################
+escapeVoidState = ->
+    ## If we are in VOID state then we go back one step
+    if navState.base == "VOID"
+        try
+            navigationLocked = true
+            await navigateBack(1)
+        finally navigationLocked = false
+    return 
 
 ############################################################
 #region Helper Functions
@@ -177,7 +204,7 @@ navReplace = (base, modifier, context) ->
     return
 
 navigateBack = (steps) ->
-    if backNavPromiseResolve? then return
+    return if backNavPromiseResolve?
     return if navState.depth == 0 or steps > navState.depth
 
     navAction = getBackNavAction()
@@ -194,7 +221,7 @@ navigateBack = (steps) ->
 ############################################################
 clearNavTree = ->
     await navigateBack(navState.depth)
-    navigateTo("INVALID", "none")
+    navigateTo("VOID", "none")
     await navigateBack(1)
     return
 
@@ -202,7 +229,7 @@ clearNavTree = ->
 
 ############################################################
 #region Backwards Navigation Helpers
-checkCodeBackNavAction = (navAction) ->
+isInternalBackNavAction = (navAction) ->
     if navAction.action != "back" then return false
     if navAction.timestamp != backNavPromiseTimestamp then return false
     return true
@@ -212,7 +239,7 @@ createBackNavPromise = (navAction) ->
     pConstruct = (resolve) -> backNavPromiseResolve = resolve
     return new Promise(pConstruct)
 
-resolveCodeBackNav = ->
+resolveInternalBackNav = ->
     backNavPromiseResolve()
     backNavPromiseResolve = null
     backNavPromiseTimestamp = null 
@@ -243,15 +270,18 @@ getBackNavAction = ->
 #endregion
 
 ############################################################
-isValidHistoryState = ->
-    if !history.state? then return false
-    historyKeys = Object.keys(history.state)
-    rootKeys = Object.keys(rootState)
-    if historyKeys.length != rootKeys.length then return false
+isValidHistoryState = -> isValidState(history.state)
 
-    for hKey,idx in historyKeys
-        if hKey != rootKeys[idx] then return false
+isValidState = (state) ->
+    if !state? then return false
+    stateKeys = Object.keys(state)
+    validKeys = Object.keys(rootState)
+    if stateKeys.length != validKeys.length then return false
+
+    for sKey,idx in stateKeys
+        if sKey != validKeys[idx] then return false
     return true
+
 
 ############################################################
 storeNavInfo = (info) -> sessionStorage.setItem("NAV_info", JSON.stringify(info))
@@ -270,9 +300,9 @@ displayState = (state) ->
 export toMod = (newMod, context) ->
     return if navigationLocked
     if !newMod? then newMod = "none"
-    
     if typeof newMod != "string" then throw new Error("In navhandler.toMod `newMod` is not a string!")
 
+    await escapeVoidState()
     oldMod = navState.modifier
 
     ## We need to merge the context, as the baseState context is still important
@@ -314,20 +344,11 @@ export toMod = (newMod, context) ->
 
 export toBase = (newBase, context) ->
     return if navigationLocked
-
-    oldBase = navState.base
-    oldMod = navState.modifier
-
     if typeof newBase != "string" then throw new Error("In navhandler.toBase `newBase` must a string!")
 
-    ## If we are in INVALID state then we go back one first.
-    if oldBase == "INVALID"
-        try
-            navigationLocked = true
-            await navigateBack(1)
-        finally navigationLocked = false
-        oldBase = navState.base
-
+    await escapeVoidState()
+    oldBase = state.base
+    oldMod = navState.modifier
 
     ## If we already have the same base state then we can replace that state
     if oldBase == newBase 
@@ -360,7 +381,6 @@ export toBase = (newBase, context) ->
 export toBaseAt = (newBase, context, depth) ->
     return if navigationLocked
 
-    oldBase = navState.base
     oldMod = navState.modifier
     oldDepth = navState.depth
 

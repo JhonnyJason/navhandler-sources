@@ -95,8 +95,8 @@ There 2 are reserved `base` states:
 The first Loaded `base` state is always the `RootState`. It always has `navState.depth = 0`. No other state may replace the `RootState`.
 You may take it as the generic state for the "Homepage".
 
-### `INVALID`
-The `INVALID` `base` state never triggers an `navStateUpdate` call. It is used internally, to clear a the history branch.
+### `VOID`
+The `VOID` `base` state never triggers an `navStateUpdate` call. It is used internally, to clear a the history branch.
 
 
 ## Modifier State
