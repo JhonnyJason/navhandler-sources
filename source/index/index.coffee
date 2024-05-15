@@ -387,6 +387,7 @@ export toBaseAt = (newBase, context, depth) ->
     if typeof newBase != "string" then throw new Error("In navhandler.toBase `newBase` must a string!")
     if typeof depth != "number" then throw new Error("Depth must be specified, and be a number!")
     if depth == 0 then throw new Error("Depth cannot be 0!")
+    if depth == (oldDepth + 1) then return toBase(newBase, context) ## when we want it as next state we can directly navigate to there
     if depth > oldDepth then throw new Error("Our current depth is before the the newly specified depth. We don't dare to jump unto the unknown future!")
 
     ## To cancel all future history we go back 1 step before the specified depth

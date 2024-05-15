@@ -1,6 +1,6 @@
 {
     "name": "navhandler",
-    "version": "0.0.3",
+    "version": "0.0.4",
     "description": "A convenience package to incorporate the browser history API into your PWA.",
     "main": "index.js",
     "scripts": {
